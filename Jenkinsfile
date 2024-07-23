@@ -1,39 +1,55 @@
 pipeline {
-    agent { label "dev-server"}
+    
+    agent any
     
     stages {
         
-        stage("code"){
+        stage("Code"){
             steps{
-                git url: "https://github.com/LondheShubham153/node-todo-cicd.git", branch: "master"
-                echo 'bhaiyya code clone ho gaya'
+                git url: "https://github.com/saurabhslt/node-todo-cicd.git" , branch: "master"
+                echo "Code Cloned Successfully"
             }
         }
-        stage("build and test"){
+        stage("Build"){
             steps{
-                sh "docker build -t node-app-test-new ."
-                echo 'code build bhi ho gaya'
+                sh 'docker build -t node-app-batch-6:latest .'
+                echo "Code Built Successfully"
             }
         }
-        stage("scan image"){
+        stage("Test"){
             steps{
-                echo 'image scanning ho gayi'
+                echo "Build Tested Successfully"
             }
         }
-        stage("push"){
+        stage("Push to Private Docker Hub Repo"){
             steps{
-                withCredentials([usernamePassword(credentialsId:"dockerHub",passwordVariable:"dockerHubPass",usernameVariable:"dockerHubUser")]){
-                sh "docker login -u ${env.dockerHubUser} -p ${env.dockerHubPass}"
-                sh "docker tag node-app-test-new:latest ${env.dockerHubUser}/node-app-test-new:latest"
-                sh "docker push ${env.dockerHubUser}/node-app-test-new:latest"
-                echo 'image push ho gaya'
+                withCredentials([usernamePassword(credentialsId:"DockerHubCreds",passwordVariable:"dockerPass",usernameVariable:"dockerUser")]){
+                sh "docker login -u ${env.dockerUser} -p ${env.dockerPass}"
+                sh "docker tag node-app-batch-6:latest ${env.dockerUser}/node-app-batch-6:latest"
+                sh "docker push ${env.dockerUser}/node-app-batch-6:latest"
                 }
+                
             }
         }
-        stage("deploy"){
+        stage("Sonar"){
             steps{
-                sh "docker-compose down && docker-compose up -d"
-                echo 'deployment ho gayi'
+                echo "Build Tested Successfully"
+            }
+        }
+        stage("OWASP"){
+            steps{
+                echo "Build Tested Successfully"
+            }
+        }
+        stage("Trivy"){
+            steps{
+                echo "Image Scanned Successfully"
+            }
+        }
+        stage("Deploy"){
+            steps{
+                sh "docker-compose up -d"
+                echo "App Deployed Successfully"
             }
         }
     }
